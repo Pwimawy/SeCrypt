@@ -1,8 +1,7 @@
 import os
-import argparse
 import getpass
-from pathlib import Path
 import secrets
+from pathlib import Path
 from secrypt_utils import create_keyfile, encrypt_file_with_key
 
 # === Banner ===
@@ -21,42 +20,61 @@ def ensure_dirs():
     os.makedirs('encrypted_files', exist_ok=True)
     os.makedirs('keyfiles', exist_ok=True)
 
-# === Main Logic ===
-def main():
-    print(ASCII_ART)
-
-    parser = argparse.ArgumentParser(description='File Encryption Utility (CLI)')
-    parser.add_argument('--encrypt', dest='infile', help='Path to file to encrypt')
-    parser.add_argument('--password', dest='password', help='Encryption password (optional)')
-    args = parser.parse_args()
-
-    if not args.infile:
-        print("\nUsage: secrypt.py --encrypt <file> [--password <password>]\n")
-        return
-
+# === File Encryption Logic ===
+def encrypt_file_gui():
     ensure_dirs()
-    in_path = Path(args.infile).expanduser()
+
+    print("\n📁 Enter path to the file you want to encrypt:")
+    infile = input("> ").strip().strip('"')
+
+    in_path = Path(infile).expanduser()
     if not in_path.exists():
-        print("File not found:", in_path)
+        print("❌ File not found:", in_path)
         return
 
-    password = args.password.encode() if args.password else getpass.getpass("Password: ").encode()
-    file_key = secrets.token_bytes(32)
+    print("\n🔑 Enter encryption password (leave blank to be prompted):")
+    password_input = input("> ").strip()
+    password = password_input.encode() if password_input else getpass.getpass("Password: ").encode()
 
+    file_key = secrets.token_bytes(32)
     enc_path = Path("encrypted_files") / (in_path.name + ".enc")
     keyfile_path = Path("keyfiles") / (in_path.name + ".key.json")
 
-    print("\nEncrypting...")
+    print("\n⏳ Encrypting, please wait...")
     metadata = {"original_filename": in_path.name}
 
     encrypt_file_with_key(in_path, enc_path, file_key)
     create_keyfile(file_key, password, keyfile_path, metadata)
 
-    print(f"\n✅ Encryption complete!")
+    print("\n✅ Encryption complete!")
     print(f"🔐 Encrypted file saved at: {enc_path}")
     print(f"🗝️  Keyfile saved at:       {keyfile_path}")
-    print("\nKeep your password and keyfile safe — both are required to decrypt.")
+    print("\n⚠️  Keep your password and keyfile safe — both are required to decrypt.\n")
+
+# === Main Menu ===
+def main_menu():
+    print(ASCII_ART)
+
+    while True:
+        print("=== SECRYPT — File Encryption Utility ===")
+        print("[1] Encrypt a file")
+        print("[2] Open encrypted_files folder")
+        print("[3] Open keyfiles folder")
+        print("[4] Exit")
+        choice = input("\nSelect an option: ").strip()
+
+        if choice == "1":
+            encrypt_file_gui()
+        elif choice == "2":
+            os.startfile("encrypted_files") if os.name == "nt" else os.system("open encrypted_files")
+        elif choice == "3":
+            os.startfile("keyfiles") if os.name == "nt" else os.system("open keyfiles")
+        elif choice == "4":
+            print("\n👋 Exiting SECRYPT. Stay safe!\n")
+            break
+        else:
+            print("❌ Invalid choice. Please try again.\n")
 
 # === Entry Point ===
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    main_menu()

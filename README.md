@@ -1,8 +1,8 @@
-# 🔐 Secrypt — Secure File Encryption & Decryption (TUI)
+# 🔐 Secrypt — Secure File Encryption & Decryption (Text User Interface)
 
 Secrypt is a simple yet strong command-line file encryption tool built in Python using the **`cryptography`** library.  
 It encrypts your files with AES-256-GCM and protects the encryption key using a password-based keyfile system.  
-Simple GUI — no leaks — just pure encryption.
+Simple TUI — no leaks — just pure encryption.
 
 ~~~text
  ______     ______     ______     ______     __  __     ______   ______  

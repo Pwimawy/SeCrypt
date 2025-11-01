@@ -4,11 +4,13 @@ Secrypt is a simple yet strong command-line file encryption tool built in Python
 It encrypts your files with AES-256-GCM and protects the encryption key using a password-based keyfile system.  
 No GUI — no leaks — just pure encryption.
 
+~~~text
  ______     ______     ______     ______     __  __     ______   ______  
 /\  ___\   /\  ___\   /\  ___\   /\  == \   /\ \_\ \   /\  == \ /\__  _\ 
 \ \___  \  \ \  __\   \ \ \____  \ \  __<   \ \____ \  \ \  _-/ \/_/\ \/ 
  \/\_____\  \ \_____\  \ \_____\  \ \_\ \_\  \/\_____\  \ \_\      \ \_\ 
-  \/_____/   \/_____/   \/_____/   \/_/ /_/   \/_____/   \/_/       \/_/ 
+  \/_____/   \/_____/   \/_____/   \/_/ /_/   \/_____/   \/_/       \/_/
+~~~
                                                                          
                           ***made by Pwimawy***
 
@@ -45,23 +47,53 @@ pip install cryptography
 
 ## 🔑 2. Encryption
 
-### Basic Usage  
+### Basic Usage
+
+~~~bash
+python secrypt.py
+~~~
+
+1. **Run the script**:
 ```
-python secrypt.py --encrypt <file>
+python secrypt.py
 ```
 
-You will be prompted for a password (hidden input).  
+2. **Follow the on-screen prompts**:
+- You will see the SECRYPT ASCII banner.
+- A menu will appear with options:
+  1. Encrypt a file
+  2. Open `encrypted_files` folder
+  3. Open `keyfiles` folder
+  4. Exit
 
-### Optional Password Argument  
-```
-python secrypt.py --encrypt <file> --password "<yourpassword>"
-```
+3. **Encrypt a file**:
+- Choose option `[1] Encrypt a file`.
+- Enter the path to the file you want to encrypt.
+- Enter an encryption password (hidden input if left blank).
+- The encrypted file will be saved in `encrypted_files/`.
+- The keyfile required for decryption will be saved in `keyfiles/`.
 
-### Output Files  
-- Encrypted file → `encrypted_files/<filename>.enc`  
-- Keyfile → `keyfiles/<filename>.key.json`  
+4. **Other actions**:
+- Open folders using options `[2]` or `[3]`.
+- Exit the utility with option `[4]`.
 
-🧠 **Important:** Keep your password and keyfile safe. You need both to decrypt.
+### Output Files
+
+When you encrypt a file using SECRYPT, two main output files are generated:
+
+1. **Encrypted File**  
+   - Location: `encrypted_files/`  
+   - Filename: `<original_filename>.enc`  
+   - This is the actual encrypted version of your file.  
+   - Example: If you encrypt `document.txt`, the encrypted file will be `encrypted_files/document.txt.enc`.
+
+2. **Keyfile**  
+   - Location: `keyfiles/`  
+   - Filename: `<original_filename>.key.json`  
+   - This JSON file contains the encrypted file key and metadata needed for decryption.  
+   - Example: For `document.txt`, the keyfile will be `keyfiles/document.txt.key.json`.
+
+⚠️ **Important**: Both the encrypted file and its corresponding keyfile are required to successfully decrypt your data. Never lose or share your password and keyfile.
 
 ---
 
@@ -87,7 +119,7 @@ The original file will be restored in the current directory.
 ## 🧰 4. File Structure
 
 ```
-secrypt/
+SeCrypt/
 ├── secrypt.py
 ├── decryption.py
 ├── secrypt_utils.py
@@ -103,23 +135,30 @@ No need to include:
 ---
 
 ## 🛡️ 5. Security Notes
-- Uses **AES-256-GCM** (authenticated encryption)
-- Passwords are never stored in plaintext  
-- Keyfiles contain encrypted file keys using PBKDF2-derived keys  
-- No GUI = minimal attack surface  
-- Hidden logs track encryption events locally  
 
----
+- Uses **AES-256-GCM** (authenticated encryption).  
+- Passwords are never stored in plaintext.  
+- Keyfiles contain encrypted file keys derived from user passwords (PBKDF2 or similar).  
+- **GUI / TUI present** — the project includes an interactive text-based GUI. This improves usability but increases the attack surface compared to a non-interactive CLI. Treat GUI components as part of the trusted code-path and apply the same hardening and review practices as the rest of the codebase.  
+- Be careful with visible password input: the current flow allows either a visible typed password or a hidden prompt (via `getpass`) when left blank — prefer always using hidden input to avoid shoulder-surfing and accidental logging.  
+- Opening folders with OS commands (e.g., `os.startfile` / `open`) interacts with the host OS and may expose file paths to the desktop environment — avoid calling these from privileged contexts.  
+- Local logs (if enabled) record encryption events on disk — keep logs local, encrypted, or opt them out entirely. Logs may contain filenames and timestamps; do **not** log secrets (passwords, raw keys, or key material).  
+- File and keyfile storage:
+  - Encrypted files are stored under `encrypted_files/` and keyfiles under `keyfiles/`.  
+  - Ensure proper filesystem permissions on these folders (restrict to the user account).  
+  - Never store keyfiles or passwords in cloud-sync folders unless they are additionally secured (e.g., full-disk encryption + separate secret management).  
+- Backups & key management: losing the keyfile or password means losing access to the data. Keep secure, redundant backups of keyfiles (but keep them protected!).  
+- Threat model & best practices:
+  - Do not run SECRYPT as an elevated/administrator account unless necessary.  
+  - Audit third-party dependencies (e.g., crypto libraries) and keep them up-to-date.  
+  - Prefer long, high-entropy passphrases over short passwords. Consider integrating hardware-backed keystores (YubiKey / HSM) for high-security workflows.  
+  - Consider secure deletion for original plaintext files after verification (implement carefully; secure deletion is OS-dependent and not currently provided).  
+- Recommendations for future hardening:
+  - Always use hidden password prompts in the GUI/TUI by default.  
+  - Add an option to disable local logging or to encrypt logs.  
+  - Add integrity checks and fingerprinting for keyfiles so users can verify they’re using the correct keyfile.  
+  - Consider code signing for releases to reduce tampering risk.
 
-## 🧑‍💻 Example Workflow
-
-```
-# Encrypt a file
-python secrypt.py --encrypt secret.txt
-
-# Decrypt it
-python decryption.py --decrypt encrypted_files/secret.txt.enc --keyfile keyfiles/secret.txt.key.json
-```
 
 ---
 

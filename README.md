@@ -165,6 +165,3 @@ No need to include:
 
 ## 📜 License
 MIT License © 2025 — Made by **Pwimawy**
-
-git clone https://github.com/<your-username>/secrypt.git
-cd secrypt
